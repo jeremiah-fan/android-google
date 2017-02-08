@@ -1,6 +1,6 @@
 # Google's Applied CS with Android
 
-<h2> Included are projects built during the course of this six-week class. I extended some of the projects to make them more fun to play. </h2>
+<h3> Included are projects built during the course of this six-week class. I extended some of the projects to make them more fun to play. </h3>
 <ul>
 <li> <strong> Project 1 - Anagrams: </strong> Given a target word, think of as many words that contain the same letters plus one more letter as possible!
 <br> <strong> Extension: </strong> Added a timer and a score </li>
