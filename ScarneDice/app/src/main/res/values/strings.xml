@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Scarne\'s Dice</string>
+    <string name="rollbtn_send">Roll</string>
+    <string name="holdbtn_send">Hold</string>
+    <string name="resetbtn_send">Reset</string>
+</resources>
