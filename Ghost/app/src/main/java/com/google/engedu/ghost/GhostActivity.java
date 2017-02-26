@@ -27,10 +27,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.util.concurrent.locks.Lock;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Random;
 import android.util.Log;
 
@@ -40,6 +38,7 @@ import org.w3c.dom.Text;
 public class GhostActivity extends AppCompatActivity {
     private static final String COMPUTER_TURN = "Computer's turn";
     private static final String USER_TURN = "Your turn";
+    private static final boolean FAST_DICTIONARY = true;
     private GhostDictionary dictionary;
     private boolean userTurn = false;
     private boolean gameOver = false;
@@ -51,10 +50,12 @@ public class GhostActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ghost);
 
+        int gamemode = getIntent().getIntExtra(InitialScreenActivity.GAMEMODE, InitialScreenActivity.EASYMODE);
+
         AssetManager assetManager = getAssets();
         try {
             InputStream inputStream = assetManager.open("words.txt");
-            dictionary = new SimpleDictionary(inputStream);
+            dictionary = FAST_DICTIONARY ? new FastDictionary(inputStream, gamemode) : new SimpleDictionary(inputStream);
         } catch (IOException e) {
             Toast toast = Toast.makeText(this, "Could not load dictionary", Toast.LENGTH_LONG);
             toast.show();
@@ -179,7 +180,7 @@ public class GhostActivity extends AppCompatActivity {
                 else {
                     ghostText.setText(wordFragment);
                     if (dictionary.isWord(wordFragment)) {
-                        Log.d("Challenge Issued", "Word is in dictionary!");
+                        Log.d("Challenge Issued", wordFragment + " is in dictionary!");
                         challenge(null);
                     } else {
                         String wordToBuild = dictionary.getAnyWordStartingWith(wordFragment);

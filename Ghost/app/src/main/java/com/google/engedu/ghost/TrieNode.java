@@ -15,7 +15,11 @@
 
 package com.google.engedu.ghost;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.Stack;
 
 
 public class TrieNode {
@@ -28,17 +32,120 @@ public class TrieNode {
     }
 
     public void add(String s) {
+        HashMap <String, TrieNode> temp = children;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (!temp.containsKey("" + c))
+                temp.put("" + c, new TrieNode());
+
+            if (i != s.length() - 1)
+                temp = temp.get("" + c).children;
+            else
+                temp.get("" + c).isWord = true;
+        }
     }
 
     public boolean isWord(String s) {
-      return false;
+        TrieNode search = searchNode(s);
+        return search != null && search.isWord;
     }
 
     public String getAnyWordStartingWith(String s) {
-        return null;
+        TrieNode search = searchNode(s);
+        if(search == null)
+            return null;
+
+        Random rand = new Random();
+        HashMap <String, TrieNode> cur = search.children;
+        while(!cur.isEmpty()) { //When cur.isEmpty() is true, we have reached a leaf node
+            List <String> letterSet = new ArrayList<>(cur.keySet());
+            String letterToAdd = letterSet.get(rand.nextInt(letterSet.size()));
+            s += letterToAdd;
+
+            if(cur.get(letterToAdd).isWord && rand.nextInt(2) == 1) // If is word, randomly choose if want to keep going or stop
+                break;
+
+            cur = cur.get(letterToAdd).children;
+        }
+
+        return s;
     }
 
     public String getGoodWordStartingWith(String s) {
-        return null;
+        if(s.equals(""))
+            return getAnyWordStartingWith("");
+
+        TrieNode search = searchNode(s);
+        if(search == null)
+            return null;
+
+        Random rand = new Random();
+        HashMap <String, TrieNode> cur = search.children;
+        while(!cur.isEmpty()) {
+            List <String> badWords = new ArrayList<>();
+            List <String> okayWords = new ArrayList<>();
+
+            String letterToAdd = "";
+            for(String letter: new ArrayList<>(cur.keySet())) {
+                if(!cur.get(letter).isWord) {
+                    if (DFSFindGoodWord(cur.get(letter), s)) {
+                        letterToAdd = letter;
+                        break;
+                    } else {
+                        okayWords.add(letter);
+                    }
+                }
+                else {
+                    badWords.add(letter);
+                }
+            }
+
+            if(letterToAdd.equals(""))
+                letterToAdd = !okayWords.isEmpty() ? okayWords.get(rand.nextInt(okayWords.size())) : badWords.get(rand.nextInt(badWords.size()));
+            s += letterToAdd;
+            cur = cur.get(letterToAdd).children;
+        }
+        return s;
+    }
+
+    private TrieNode searchNode(String s){ // Returns last TrieNode of matching string, if it exists
+        HashMap <String, TrieNode> cur = children;
+        for(int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (!cur.containsKey("" + c))
+                return null;
+
+            if (i != s.length() - 1)
+                cur = cur.get("" + c).children;
+            else
+                return cur.get("" + c);
+        }
+        return this; // for empty string
+    }
+
+    private boolean DFSFindGoodWord(TrieNode startingPoint, String initString){
+        Stack<TrieNode> toVisit = new Stack<>();
+        Stack<Integer> toVisitLength = new Stack<>();
+        for(TrieNode t : startingPoint.children.values()) {
+            toVisit.push(t);
+            toVisitLength.push(1);
+        }
+
+        while (!toVisit.isEmpty() && !toVisitLength.isEmpty()){
+            TrieNode t = toVisit.pop();
+            int length = toVisitLength.pop();
+
+            if(t.children.isEmpty() && initString.length() % 2 == length % 2)
+                return true;
+
+            for (TrieNode subT : t.children.values()){
+                if(initString.length() % 2 != length % 2 || !subT.isWord) {
+                    toVisit.push(subT);
+                    toVisitLength.push(length + 1);
+                }
+            }
+        }
+
+        return false;
     }
 }
